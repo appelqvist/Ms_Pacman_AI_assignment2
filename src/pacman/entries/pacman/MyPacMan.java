@@ -1,15 +1,14 @@
 package pacman.entries.pacman;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import dataRecording.DataTuple;
 import pacman.controllers.Controller;
 import pacman.game.Constants;
 import pacman.game.Game;
-import sun.reflect.generics.tree.Tree;
 
 import java.io.*;
 import java.util.LinkedList;
+
+import static java.lang.String.valueOf;
 
 /**
  * Created by Andréas Appelqvist on 2016-10-17.
@@ -22,7 +21,7 @@ public class MyPacMan extends Controller<Constants.MOVE> {
 
     public MyPacMan() {
 
-        /*try {
+        try {
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream(pathToTree));
             this.decisionTreeRoot = (TreeNode) ois.readObject();
             ois.close();
@@ -30,7 +29,7 @@ public class MyPacMan extends Controller<Constants.MOVE> {
         } catch (FileNotFoundException e) {
             //File not found Create a decisionTree.
             System.out.println(LOG + "No decision tree to load, creating a new..");
-            this.decisionTreeRoot = createNewTree();
+             decisionTreeRoot = createNewTree();
 
             if (saveDecisionTree()) {
                 System.out.println(LOG + "The new tree has been saved");
@@ -44,9 +43,11 @@ public class MyPacMan extends Controller<Constants.MOVE> {
         } catch (ClassNotFoundException e) {
             System.err.println(LOG + "Exception when read file");
             e.printStackTrace();
-        }*/
+        }
 
-        createNewTree();
+        System.out.println("Decision Tree:");
+        this.decisionTreeRoot.print();
+
     }
 
     @Override
@@ -54,7 +55,7 @@ public class MyPacMan extends Controller<Constants.MOVE> {
      * This is called when it is needed to make a move.
      */
     public Constants.MOVE getMove(Game game, long timeDue) {
-        return Constants.MOVE.NEUTRAL;
+        return decisionTreeRoot.makeMove(new DataTuple(game, Constants.MOVE.NEUTRAL));
     }
 
     private TreeNode createNewTree() {
@@ -71,33 +72,45 @@ public class MyPacMan extends Controller<Constants.MOVE> {
                 trainingData.add(tuple);
             }
         }
-        System.out.println(testData.size() + " " + trainingData.size());
-        TreeNode n = new TreeNode(ID3.selectBestAttribute(trainingData, attributes));
-
-        return null;
+        TreeNode n = generateTree(trainingData, attributes);
+        System.out.println(getAccuracy(trainingData));
+        return n;
     }
 
-    private TreeNode GenerateTree(LinkedList<DataTuple> data, LinkedList<String> atr) {
+    private TreeNode generateTree(LinkedList<DataTuple> data, LinkedList<String> atr) {
         TreeNode node = new TreeNode();
         if (data.size() > 0 && allTupleSameClass(data)) {
             node.setAsLeaf();
             node.setMove(data.getFirst().DirectionChosen);
             node.setLabel("" + data.getFirst().DirectionChosen);
             return node;
-        } else if (atr.size() == 0) {
+        } else if (atr.isEmpty()) {
             Constants.MOVE majMove = getMajorityClass(data);
             node.setAsLeaf();
             node.setMove(majMove);
-            node.setLabel(""+majMove);
+            node.setLabel("");
             return node;
-        } else{
+        } else {
             String bestAtr = ID3.selectBestAttribute(data, atr);
             node.setLabel(bestAtr);
             atr.remove(bestAtr);
-            //For every value in
+            String[] atrValue = ID3.getAttributeValue(bestAtr);
+            for (String value : atrValue) {
+                //Seperate all tuples in D so that attribute A takes the value
+                LinkedList<DataTuple> subset = ID3.getSubset(data,bestAtr,value);
+                if(subset.isEmpty()){
+                    TreeNode child = new TreeNode();
+                    Constants.MOVE move = getMajorityClass(data);
+                    child.setLabel(valueOf(move));
+                    child.setMove(move);
+                    child.setAsLeaf();
+                    node.addChildren(child,value);
+                }else{
+                    node.addChildren(generateTree(subset,atr), value);
+                }
+            }
         }
-
-        return null;
+        return node;
     }
 
     private Constants.MOVE getMajorityClass(LinkedList<DataTuple> data) {
@@ -124,9 +137,9 @@ public class MyPacMan extends Controller<Constants.MOVE> {
                     biggest = left;
                     move = Constants.MOVE.LEFT;
                 }
-            } else if (tuple.DirectionChosen == Constants.MOVE.RIGHT){
+            } else if (tuple.DirectionChosen == Constants.MOVE.RIGHT) {
                 right++;
-                if(right > biggest){
+                if (right > biggest) {
                     biggest = right;
                     move = Constants.MOVE.RIGHT;
                 }
@@ -149,7 +162,7 @@ public class MyPacMan extends Controller<Constants.MOVE> {
         LinkedList<DataTuple> data = new LinkedList<>();
         try {
             String line;
-            BufferedReader br = new BufferedReader(new FileReader("myData/trainingData.txt"));
+            BufferedReader br = new BufferedReader(new FileReader("/myData/trainingData.txt"));
             while ((line = br.readLine()) != null) {
                 data.add(new DataTuple(line));
             }
@@ -157,6 +170,15 @@ public class MyPacMan extends Controller<Constants.MOVE> {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private double getAccuracy(LinkedList<DataTuple> testData){
+        int same = 0;
+        for(DataTuple tuple : testData){
+            if((this.decisionTreeRoot.makeMove(tuple)).equals(tuple.DirectionChosen))
+                same++;
+        }
+        return (double)same/testData.size();
     }
 
     private LinkedList<String> getAttributes() {
