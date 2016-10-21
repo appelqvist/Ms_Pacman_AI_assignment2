@@ -12,7 +12,17 @@ public class DataTuple {
 		VERY_LOW, LOW, MEDIUM, HIGH, VERY_HIGH, NONE;
 
 		public static DiscreteTag DiscretizeDouble(double aux) {
-			if (aux < 0.1)
+
+            if(aux <= 0.25){
+                return DiscreteTag.LOW;
+            }else if(aux >= 0.7){
+                return DiscreteTag.HIGH;
+            }else{
+                return DiscreteTag.MEDIUM;
+            }
+
+            /* Old discreteTags
+            if (aux < 0.1)
 				return DiscreteTag.VERY_LOW;
 			else if (aux <= 0.3)
 				return DiscreteTag.LOW;
@@ -22,7 +32,10 @@ public class DataTuple {
 				return DiscreteTag.HIGH;
 			else
 				return DiscreteTag.VERY_HIGH;
+            */
 		}
+
+
 	}
 
 	public MOVE DirectionChosen;

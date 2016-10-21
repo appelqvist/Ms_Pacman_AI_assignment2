@@ -6,6 +6,7 @@ import pacman.controllers.Controller;
 import pacman.game.Constants;
 import pacman.game.Game;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.util.LinkedList;
 
@@ -53,11 +54,12 @@ public class MyPacMan extends Controller<Constants.MOVE> {
 
     @Override
     public Constants.MOVE getMove(Game game, long timeDue) {
+        System.out.println("Vill ha ett move?");
         return decisionTreeRoot.getLeaf(new DataTuple(game, Constants.MOVE.NEUTRAL)).getMove();
     }
 
     private TreeNode createNewTree() {
-        LinkedList<String> attributes = getAttributes();
+        LinkedList<String> attributes = toolBox.getAttributes();
         LinkedList<DataTuple> data = getUserData();
         LinkedList<DataTuple> testData = new LinkedList<>();
         LinkedList<DataTuple> trainingData = new LinkedList<>();
@@ -74,19 +76,19 @@ public class MyPacMan extends Controller<Constants.MOVE> {
         TreeNode n = generateTree(trainingData, attributes);
         n.getMove();
         System.out.println(trainingData.size()+ ":"+ testData.size());
-        System.out.println(getAccuracy(n ,testData));
+        System.out.println(toolBox.getAccuracy(n ,testData));
         return n;
     }
 
     private TreeNode generateTree(LinkedList<DataTuple> data, LinkedList<String> atr) {
         TreeNode node = new TreeNode();
-        if (data.size() > 0 && allTupleSameClass(data)) {
+        if (data.size() > 0 && toolBox.allTupleSameClass(data)) {
             node.setAsLeaf();
             node.setMove(data.getFirst().DirectionChosen);
             node.setLabel("" + data.getFirst().DirectionChosen);
             return node;
         } else if (atr.isEmpty()) {
-            Constants.MOVE majMove = getMajorityClass(data);
+            Constants.MOVE majMove = toolBox.getMajorityClass(data);
             node.setAsLeaf();
             node.setMove(majMove);
             node.setLabel("");
@@ -95,13 +97,13 @@ public class MyPacMan extends Controller<Constants.MOVE> {
             String bestAtr = ID3.selectBestAttribute(data, atr);
             node.setLabel(bestAtr);
             atr.remove(bestAtr);
-            String[] atrValue = ID3.getAttributeValue(bestAtr);
+            String[] atrValue = toolBox.getAttributeValue(bestAtr);
             for (String value : atrValue) {
                 //Seperate all tuples in D so that attribute A takes the value
-                LinkedList<DataTuple> subset = ID3.getSubset(data,bestAtr,value);
+                LinkedList<DataTuple> subset = toolBox.getSubset(data,bestAtr,value);
                 if(subset.isEmpty()){
                     TreeNode child = new TreeNode();
-                    Constants.MOVE move = getMajorityClass(data);
+                    Constants.MOVE move = toolBox.getMajorityClass(data);
                     child.setLabel(valueOf(move));
                     child.setMove(move);
                     child.setAsLeaf();
@@ -112,51 +114,6 @@ public class MyPacMan extends Controller<Constants.MOVE> {
             }
         }
         return node;
-    }
-
-    private Constants.MOVE getMajorityClass(LinkedList<DataTuple> data) {
-        int up = 0, down = 0, left = 0, right = 0;
-        int biggest = -1;
-        Constants.MOVE move = Constants.MOVE.NEUTRAL;
-
-        for (DataTuple tuple : data) {
-            if (tuple.DirectionChosen == Constants.MOVE.UP) {
-                up++;
-                if (up > biggest) {
-                    biggest = up;
-                    move = Constants.MOVE.UP;
-                }
-            } else if (tuple.DirectionChosen == Constants.MOVE.DOWN) {
-                down++;
-                if (down > biggest) {
-                    biggest = down;
-                    move = Constants.MOVE.DOWN;
-                }
-            } else if (tuple.DirectionChosen == Constants.MOVE.LEFT) {
-                left++;
-                if (left > biggest) {
-                    biggest = left;
-                    move = Constants.MOVE.LEFT;
-                }
-            } else if (tuple.DirectionChosen == Constants.MOVE.RIGHT) {
-                right++;
-                if (right > biggest) {
-                    biggest = right;
-                    move = Constants.MOVE.RIGHT;
-                }
-            }
-        }
-        return move;
-    }
-
-    private boolean allTupleSameClass(LinkedList<DataTuple> data) {
-        Constants.MOVE move = data.getFirst().DirectionChosen;
-        for (DataTuple tuple : data) {
-            if (tuple.DirectionChosen != move) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private LinkedList<DataTuple> getUserData() {
@@ -172,40 +129,6 @@ public class MyPacMan extends Controller<Constants.MOVE> {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private double getAccuracy(TreeNode root ,LinkedList<DataTuple> testData){
-        int same = 0;
-        System.out.println(root.label);
-        for(DataTuple tuple : testData){
-            TreeNode child = root.getLeaf(tuple);
-            if(child.getMove().equals(tuple.DirectionChosen))
-                same++;
-        }
-        System.out.println(same + " av " + testData.size());
-        return (double)same/testData.size();
-    }
-
-    private LinkedList<String> getAttributes() {
-        LinkedList<String> attributes = new LinkedList<>();
-        attributes.add("pillsLeft");
-        attributes.add("powerPillsLeft");
-
-        attributes.add("distanceToBlinky");
-        attributes.add("distanceToInky");
-        attributes.add("distanceToPinky");
-        attributes.add("distanceToSue");
-
-        attributes.add("dirToBlinky");
-        attributes.add("dirToInky");
-        attributes.add("dirToPinky");
-        attributes.add("dirToSue");
-
-        attributes.add("isBlinkyEdible");
-        attributes.add("isInkyEdible");
-        attributes.add("isPinkyEdible");
-        attributes.add("isSueEdible");
-        return attributes;
     }
 
     private boolean saveDecisionTree() {
