@@ -105,20 +105,22 @@ public class ID3 {
     public static String[] getAttributeValue(String atr) {
         String[] a;
         if (atr.contains("dirTo")) {
-            a = new String[4];
+            a = new String[5];
             a[0] = "UP";
             a[1] = "DOWN";
             a[2] = "LEFT";
             a[3] = "RIGHT";
+            a[4] = "NONE";
         } else if (atr.contains("Edible")) {
             a = new String[2];
             a[0] = "true";
             a[1] = "false";
         } else {
-            a = new String[3];
+            a = new String[4];
             a[0] = "LOW";
             a[1] = "MEDIUM";
             a[2] = "HIGH";
+            a[3] = "NONE";
         }
         return a;
     }

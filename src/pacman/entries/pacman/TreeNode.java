@@ -9,20 +9,23 @@ import sun.reflect.generics.tree.Tree;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import static java.lang.String.valueOf;
 
 /**
  * Created by Andréas Appelqvist on 2016-10-19.
  */
 public class TreeNode implements Serializable {
-    private String label;
+    public String label;
     private boolean isLeaf = false;
     private Constants.MOVE move = Constants.MOVE.NEUTRAL;
     private HashMap<String, TreeNode> children = new HashMap<>(); //Key atrValue, Value children
 
     public void setMove(Constants.MOVE move) {
         this.move = move;
+    }
+
+    public Constants.MOVE getMove() {
+        return this.move;
     }
 
     public void setAsLeaf() {
@@ -63,65 +66,66 @@ public class TreeNode implements Serializable {
 
     }
 
-    public Constants.MOVE makeMove(DataTuple tuple) {
-        if (isLeaf) {
-            return move;
+
+    public TreeNode getLeaf(DataTuple tuple) {
+        if (this.isLeaf) {
+            System.out.println(this.label);
+            return this;
         } else {
             TreeNode child;
-            if (label.contains("Blinky")) {
-                if (label.contains("dir")) {
-                    child = children.get(valueOf(tuple.blinkyDir));
-                    return child.makeMove(tuple);
-                } else if (label.contains("distance")) {
-                    child = children.get(valueOf(tuple.discretizeDistance(tuple.blinkyDist)));
-                    return child.makeMove(tuple);
-                } else if (label.contains("Edible")) {
-                    child = children.get(valueOf(tuple.isBlinkyEdible));
-                    return child.makeMove(tuple);
-                }
-            } else if (label.contains("Inky")) {
-                if (label.contains("dir")) {
-                    child = children.get(valueOf(tuple.inkyDir));
-                    return child.makeMove(tuple);
-                } else if (label.contains("distance")) {
-                    child = children.get(valueOf(tuple.discretizeDistance(tuple.inkyDist)));
-                    return child.makeMove(tuple);
-                } else if (label.contains("Edible")) {
-                    child = children.get(valueOf(tuple.isInkyEdible));
-                    return child.makeMove(tuple);
-                }
-            } else if (label.contains("Pinky")) {
-                if (label.contains("dir")) {
-                    child = children.get(valueOf(tuple.pinkyDir));
-                    return child.makeMove(tuple);
-                } else if (label.contains("distance")) {
-                    child = children.get(valueOf(tuple.discretizeDistance(tuple.pinkyDist)));
-                    return child.makeMove(tuple);
-                } else if (label.contains("Edible")) {
-                    child = children.get(valueOf(tuple.isPinkyEdible));
-                    return child.makeMove(tuple);
-                }
-            } else if (label.contains("Sue")) {
-                if (label.contains("dir")) {
-                    child = children.get(valueOf(tuple.sueDir));
-                    return child.makeMove(tuple);
-                } else if (label.contains("distance")) {
-                    child = children.get(valueOf(tuple.discretizeDistance(tuple.sueDist)));
-                    return child.makeMove(tuple);
-                } else if (label.contains("Edible")) {
-                    child = children.get(valueOf(tuple.isSueEdible));
-                    return child.makeMove(tuple);
-                }
-            } else {
-                if (label.contains("power")) {
-                    child = children.get(valueOf(tuple.discretizeNumberOfPowerPills(tuple.numOfPowerPillsLeft)));
-                    return child.makeMove(tuple);
+            if (label.contains("dir")) {
+                if (label.contains("Blinky")) {
+                    child = children.get(valueOf(tuple.blinkyDir)).getLeaf(tuple);
+                    System.out.println("dirB");
+                } else if (label.contains("Inky")) {
+                    child = children.get(valueOf(tuple.inkyDir)).getLeaf(tuple);
+                    System.out.println("dirI");
+                } else if (label.contains("Pinky")) {
+                    child = children.get(valueOf(tuple.pinkyDir)).getLeaf(tuple);
+                    System.out.println("dirP");
                 } else {
-                    child = children.get(valueOf(tuple.discretizeNumberOfPills(tuple.numOfPillsLeft)));
-                    return child.makeMove(tuple);
+                    child = children.get(valueOf(tuple.pinkyDir)).getLeaf(tuple);
+                    System.out.println("dirS");
+                }
+            } else if (label.contains("distance")) {
+                if (label.contains("Blinkey")) {
+                    child = children.get(valueOf(tuple.discretizeDistance(tuple.blinkyDist))).getLeaf(tuple);
+                    System.out.println("distanceB");
+                } else if (label.contains("Inky")) {
+                    child = children.get(valueOf(tuple.discretizeDistance(tuple.inkyDist))).getLeaf(tuple);
+                    System.out.println("distanceI");
+                } else if (label.contains("Pinky")) {
+                    child = children.get(valueOf(tuple.discretizeDistance(tuple.pinkyDist))).getLeaf(tuple);
+                    System.out.println("distanceP");
+                } else {
+                    child = children.get(valueOf(tuple.discretizeDistance(tuple.sueDist))).getLeaf(tuple);
+                    System.out.println("distanceS");
+                }
+            } else if (label.contains("Edible")) {
+                if (label.contains("Blinkey")) {
+                    child = children.get(valueOf(tuple.isBlinkyEdible)).getLeaf(tuple);
+                    System.out.println("EdibleB");
+                } else if (label.contains("Inky")) {
+                    child = children.get(valueOf(tuple.isInkyEdible)).getLeaf(tuple);
+                    System.out.println("EdibleI");
+                } else if (label.contains("Pinky")) {
+                    child = children.get(valueOf(tuple.isPinkyEdible)).getLeaf(tuple);
+                    System.out.println("EdibleP");
+                } else {
+                    child = children.get(valueOf(tuple.isSueEdible)).getLeaf(tuple);
+                    System.out.println("EdibleS");
+                }
+            }else{
+                if(label.contains("power")){
+                    child = children.get(valueOf(tuple.discretizeNumberOfPowerPills(tuple.numOfPowerPillsLeft))).getLeaf(tuple);
+                    System.out.println("power");
+                }else{
+                    child = children.get(valueOf(tuple.discretizeNumberOfPills(tuple.numOfPillsLeft))).getLeaf(tuple);
+                    System.out.println("pills");
                 }
             }
+            return child;
         }
-        return Constants.MOVE.NEUTRAL;
     }
+
 }

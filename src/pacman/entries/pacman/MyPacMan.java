@@ -1,6 +1,7 @@
 package pacman.entries.pacman;
 
 import dataRecording.DataTuple;
+import jdk.internal.org.objectweb.asm.tree.analysis.Value;
 import pacman.controllers.Controller;
 import pacman.game.Constants;
 import pacman.game.Game;
@@ -51,11 +52,8 @@ public class MyPacMan extends Controller<Constants.MOVE> {
     }
 
     @Override
-    /**
-     * This is called when it is needed to make a move.
-     */
     public Constants.MOVE getMove(Game game, long timeDue) {
-        return decisionTreeRoot.makeMove(new DataTuple(game, Constants.MOVE.NEUTRAL));
+        return decisionTreeRoot.getLeaf(new DataTuple(game, Constants.MOVE.NEUTRAL)).getMove();
     }
 
     private TreeNode createNewTree() {
@@ -64,6 +62,7 @@ public class MyPacMan extends Controller<Constants.MOVE> {
         LinkedList<DataTuple> testData = new LinkedList<>();
         LinkedList<DataTuple> trainingData = new LinkedList<>();
 
+        System.out.println(data.size());
         //Splitting up the full data into two sets. about 2 times more training tuple than test tuples.
         for (DataTuple tuple : data) {
             if (Math.random() * 10 < 3) {
@@ -73,7 +72,9 @@ public class MyPacMan extends Controller<Constants.MOVE> {
             }
         }
         TreeNode n = generateTree(trainingData, attributes);
-        System.out.println(getAccuracy(trainingData));
+        n.getMove();
+        System.out.println(trainingData.size()+ ":"+ testData.size());
+        System.out.println(getAccuracy(n ,testData));
         return n;
     }
 
@@ -162,22 +163,26 @@ public class MyPacMan extends Controller<Constants.MOVE> {
         LinkedList<DataTuple> data = new LinkedList<>();
         try {
             String line;
-            BufferedReader br = new BufferedReader(new FileReader("/myData/trainingData.txt"));
+            BufferedReader br = new BufferedReader(new FileReader("myData/trainingData.txt"));
             while ((line = br.readLine()) != null) {
                 data.add(new DataTuple(line));
             }
             return data;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
 
-    private double getAccuracy(LinkedList<DataTuple> testData){
+    private double getAccuracy(TreeNode root ,LinkedList<DataTuple> testData){
         int same = 0;
+        System.out.println(root.label);
         for(DataTuple tuple : testData){
-            if((this.decisionTreeRoot.makeMove(tuple)).equals(tuple.DirectionChosen))
+            TreeNode child = root.getLeaf(tuple);
+            if(child.getMove().equals(tuple.DirectionChosen))
                 same++;
         }
+        System.out.println(same + " av " + testData.size());
         return (double)same/testData.size();
     }
 
