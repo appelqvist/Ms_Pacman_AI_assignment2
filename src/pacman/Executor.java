@@ -14,8 +14,10 @@ import dataRecording.DataCollectorController;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
+import pacman.controllers.examples.AggressiveGhosts;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.entries.pacman.MyPacMan;
+import pacman.entries.repacman.MyNewPacMan;
 import pacman.game.Game;
 import pacman.game.GameView;
 
@@ -36,7 +38,7 @@ public class Executor {
      */
     public static void main(String[] args) {
         Executor exec = new Executor();
-        MyPacMan pacMan = new MyPacMan();
+
 
 		/*
         //run multiple games in batch mode - good for testing.
@@ -80,7 +82,14 @@ public class Executor {
 		exec.replayGame(fileName,visual);
         */
 
-        exec.runGameTimed(pacMan,new StarterGhosts(),true);
+        //run with decision tree
+        //MyPacMan pacMan = new MyPacMan();
+        //exec.runGameTimed(pacMan,new StarterGhosts(),true);
+
+        //run with new decision tree
+        MyNewPacMan pac = new MyNewPacMan();
+        //exec.runGameTimed(pac, new AggressiveGhosts(), true);
+
         //run game for data collection
         boolean visual = true;
         //exec.runGameTimed(new DataCollectorController(new KeyBoardInput()),new StarterGhosts(),visual);

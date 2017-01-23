@@ -1,12 +1,10 @@
 package pacman.entries.pacman;
 
 import dataRecording.DataTuple;
-import pacman.game.Constants;
 import java.util.LinkedList;
-import static java.lang.String.valueOf;
 
 /**
- * Created by Andréas Appelqvist on 2016-10-19.
+ * Created by Andréas Appelqvist on 2016
  */
 public class ID3 {
 
@@ -22,11 +20,11 @@ public class ID3 {
         for (String atr : attributes) { //ex dirBlinky
 
             double atrScore = 0;
-            String[] values = toolBox.getAttributeValue(atr);
+            String[] values = Utils.getAttributeValue(atr);
 
             for (String value : values) { //DOWN //UP //LEFT //RIGHT
-                subset = toolBox.getSubset(dataSet, atr, value);
-                classCount = toolBox.countClass(subset);
+                subset = Utils.getSubset(dataSet, atr, value);
+                classCount = Utils.countClass(subset);
 
                 double temp = 0;
                 for (int i = 0; i < classCount.length; i++) {
@@ -49,7 +47,7 @@ public class ID3 {
 
     private static double calcAverage(LinkedList<DataTuple> dataSet) {
 
-        int[] classCount = toolBox.countClass(dataSet);
+        int[] classCount = Utils.countClass(dataSet);
 
         int total = dataSet.size(), up = classCount[0], down = classCount[1],
                 left = classCount[2], right = classCount[3];

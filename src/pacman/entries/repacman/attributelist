@@ -1,0 +1,13 @@
+isBlinkyEdible
+isInkyEdible
+isPinkyEdible
+isSueEdible
+blinkyDist
+inkyDist
+pinkyDist
+sueDist
+blinkyDir
+inkyDir
+pinkyDir
+sueDir
+/END, SET A "#" BEFORE THE ATTRIBUTES THAT ARE GOING TO BE EXCLUDED.

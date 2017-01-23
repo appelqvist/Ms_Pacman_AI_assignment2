@@ -8,9 +8,9 @@ import java.util.LinkedList;
 import static java.lang.String.valueOf;
 
 /**
- * Created by Andréas Appelqvist on 2016-10-21.
+ * Created by Andréas Appelqvist on 2016.
  */
-public class toolBox {
+public class Utils {
 
     public static LinkedList<String> getAttributes() {
         LinkedList<String> attributes = new LinkedList<>();

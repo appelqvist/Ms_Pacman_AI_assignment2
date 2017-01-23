@@ -15,10 +15,8 @@ public class DataTuple {
 
             if(aux <= 0.25){
                 return DiscreteTag.LOW;
-            }else if(aux >= 0.7){
-                return DiscreteTag.HIGH;
             }else{
-                return DiscreteTag.MEDIUM;
+                return DiscreteTag.HIGH;
             }
 
             /* Old discreteTags
@@ -276,5 +274,4 @@ public class DataTuple {
 		double aux = this.normalizeCurrentScore(score);
 		return DiscreteTag.DiscretizeDouble(aux);
 	}
-
 }

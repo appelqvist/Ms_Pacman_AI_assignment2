@@ -1,10 +1,7 @@
 package pacman.entries.pacman;
 
 import dataRecording.DataTuple;
-import jdk.internal.org.objectweb.asm.tree.analysis.Value;
 import pacman.game.Constants;
-import pacman.game.Game;
-import sun.reflect.generics.tree.Tree;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -13,7 +10,7 @@ import java.util.Map;
 import static java.lang.String.valueOf;
 
 /**
- * Created by Andréas Appelqvist on 2016-10-19.
+ * Created by Andréas Appelqvist on 2016.
  */
 public class TreeNode implements Serializable {
     public String label;
@@ -67,16 +64,16 @@ public class TreeNode implements Serializable {
 
     }
 
-
     public TreeNode getLeaf(DataTuple tuple) {
-        if (this.isLeaf) {
+        if (isLeaf) {
             System.out.println("leaf" + this.getMove());
             return this;
         } else {
             TreeNode child;
             if (label.contains("dir")) {
                 if (label.contains("Blinky")) {
-                    child = children.get(valueOf(tuple.blinkyDir)).getLeaf(tuple);
+                    child = children.get(valueOf(tuple.blinkyDir));
+
                 } else if (label.contains("Inky")) {
                     child = children.get(valueOf(tuple.inkyDir)).getLeaf(tuple);
                 } else if (label.contains("Pinky")) {
