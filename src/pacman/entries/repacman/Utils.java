@@ -82,7 +82,7 @@ public class Utils {
             values.push("NONE");
         } else {
             System.out.println("pang här då va?");
-            System.exit(0);
+            //System.exit(0);
             //Throw a exception here.
         }
         return values;
@@ -100,7 +100,7 @@ public class Utils {
         }
 
         for(DataTuple t : data){
-            tuples.replace(t.DirectionChosen, tuples.get(t.DirectionChosen) + 1 );
+            tuples.put(t.DirectionChosen, tuples.get(t.DirectionChosen) + 1 );
         }
 
         Constants.MOVE majM = Constants.MOVE.NEUTRAL;

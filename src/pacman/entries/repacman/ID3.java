@@ -20,7 +20,7 @@ public class ID3 {
         System.out.println("entropy: " + entropy);
 
         double bestGain = Double.MIN_VALUE;
-        String attrWithHighestGain = null;
+        String attrWithHighestGain = "";
 
         for (String attribute : attr) {
             double infoAD = 0;
@@ -52,7 +52,7 @@ public class ID3 {
         for (DataTuple tuple : D) {
             temp = classes.get(tuple.DirectionChosen);
             temp++;
-            classes.replace(tuple.DirectionChosen, temp);
+            classes.put(tuple.DirectionChosen, temp);
         }
 
         int total = D.size();
