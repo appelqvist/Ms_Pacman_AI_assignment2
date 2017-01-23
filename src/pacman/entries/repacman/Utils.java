@@ -82,7 +82,7 @@ public class Utils {
             values.push("NONE");
         } else {
             System.out.println("pang här då va?");
-            //System.exit(0);
+            System.exit(0);
             //Throw a exception here.
         }
         return values;
@@ -111,5 +111,18 @@ public class Utils {
         }
 
         return majM;
+    }
+
+    /**
+     * Get Accuracy, will test the classifier
+     */
+    public static double getAccuracy(Node root ,LinkedList<DataTuple> testData){
+        int sameClass = 0;
+        for(DataTuple tuple : testData){
+            Node leaf = root.getLeafNode(tuple);
+            if(leaf.getMove().equals(tuple.DirectionChosen))
+                sameClass++;
+        }
+        return (double)sameClass/testData.size();
     }
 }

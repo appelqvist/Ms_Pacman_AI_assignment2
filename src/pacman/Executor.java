@@ -88,7 +88,7 @@ public class Executor {
 
         //run with new decision tree
         MyNewPacMan pac = new MyNewPacMan();
-        //exec.runGameTimed(pac, new AggressiveGhosts(), true);
+        exec.runGameTimed(pac, new AggressiveGhosts(), true);
 
         //run game for data collection
         boolean visual = true;

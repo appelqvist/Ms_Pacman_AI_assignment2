@@ -1,9 +1,6 @@
 package pacman.entries.repacman;
-
-import com.sun.prism.PixelFormat;
 import dataRecording.DataTuple;
 import pacman.game.Constants;
-import sun.awt.image.ImageWatched;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -17,30 +14,31 @@ public class ID3 {
 
         //Is the average value
         double entropy = info(dataTuples);
-        System.out.println("entropy: " + entropy);
-
         double bestGain = Double.MIN_VALUE;
         String attrWithHighestGain = "";
 
         for (String attribute : attr) {
             double infoAD = 0;
-
+            double gain = 0;
             for (String attrValue : Utils.findEveryPossibleAttributeValue(attribute)) {
                 LinkedList<DataTuple> subList = Utils.getSubList(dataTuples, attribute, attrValue);
-                double temp = (double) subList.size() / dataTuples.size();
-                double temp2 = info(subList);
-                infoAD += temp * temp2;   //Undefiend?
-                double gain = entropy - infoAD;
-                if (gain > bestGain) {
-                    bestGain = gain;
-                    attrWithHighestGain = attribute;
+                if(!subList.isEmpty()) { //We cannot do 0/X..
+                    double temp = (double) subList.size() / dataTuples.size();
+                    double temp2 = info(subList);
+                    infoAD += temp * temp2;
                 }
             }
+            gain = entropy - infoAD;
+            if (gain > bestGain) {
+                bestGain = gain;
+                attrWithHighestGain = attribute;
+            }else if(entropy - infoAD == 0.0){ //Fix, if the infoAD is the entropy that every other will get undefiend cause of 0/x rule.
+                attrWithHighestGain = attribute;
+                break;
+            }
         }
-        System.out.println("best attribute is:" + attrWithHighestGain);
         return attrWithHighestGain;
     }
-
 
     public static double info(LinkedList<DataTuple> D) {
         HashMap<Constants.MOVE, Integer> classes = new HashMap<>();

@@ -1,29 +1,17 @@
 package pacman.entries.repacman;
-
-import com.sun.xml.internal.bind.v2.model.core.ID;
-import com.sun.xml.internal.bind.v2.schemagen.Util;
 import dataRecording.DataTuple;
 import pacman.controllers.Controller;
-import pacman.entries.pacman.TreeNode;
 import pacman.game.Constants;
 import pacman.game.Game;
-import sun.awt.image.ImageWatched;
-import sun.reflect.generics.tree.Tree;
-
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Stack;
-
-import static java.lang.String.valueOf;
-
 /**
  * Created by Andréas Appelqvist on 2017-01-21.
  * Remake on the previous pacman i did around oct 2016
  */
 public class MyNewPacMan extends Controller<Constants.MOVE> {
-
     private String pathTree = "src/pacman/entries/repacman/decisionTree";
     private String LOG = "AI_CONTROLLER - ";
     private Node root;
@@ -40,13 +28,11 @@ public class MyNewPacMan extends Controller<Constants.MOVE> {
             root = createNewTree();
             root.print();
 
-            /*
             if (saveDecisionTree()) {
-                System.out.println(LOG + "The new tree has been saved");
+                System.out.println(LOG + "The new tree has been saved!!");
             } else {
-                System.err.println(LOG + "The new tree has not been saved");
+                System.err.println(LOG + "The new tree has not been saved!!");
             }
-            */
 
         } catch (IOException e) {
             System.err.println(LOG + "Exception when read file");
@@ -55,13 +41,13 @@ public class MyNewPacMan extends Controller<Constants.MOVE> {
             System.err.println(LOG + "Exception when read file");
             e.printStackTrace();
         }
-        System.out.println(LOG + "Decision Tree:");
     }
 
     @Override
     public Constants.MOVE getMove(Game game, long timeDue) {
         //Requiered by the framework to make a move.
-        return null;
+        Constants.MOVE move = root.getLeafNode(new DataTuple(game, Constants.MOVE.NEUTRAL)).getMove();
+        return move;
     }
 
     private Node createNewTree() {
@@ -70,8 +56,10 @@ public class MyNewPacMan extends Controller<Constants.MOVE> {
         LinkedList[] dataset = getUserData();
         LinkedList<DataTuple> training = dataset[0];
         LinkedList<DataTuple> test = dataset[1];
-        System.out.println("Träning: " + training.size() + ",  Test:" + test.size());
-        return generateTree(training, attr);
+        System.out.println(LOG+"Training set: " + training.size() + ",  Test set:" + test.size());
+        Node root = generateTree(training, attr);
+        System.out.println(LOG+"Accurate: "+Utils.getAccuracy(root, test));
+        return root;
     }
 
     private LinkedList<String> getAttributeList() {
@@ -97,24 +85,20 @@ public class MyNewPacMan extends Controller<Constants.MOVE> {
     private Node generateTree(LinkedList<DataTuple> data, LinkedList<String> attr) {
         Node n = new Node();
         if(data.size() > 0 && Utils.allTupleSameClass(data)){  //2.
-            System.out.println("ALL SAME CLASS");
             Constants.MOVE move = data.getFirst().DirectionChosen;
             n.setLeaf(move.toString(), move);
             return n;
         }else if(attr.size() == 0){                               //3
-            System.out.println("ATTR IS EMPTY");
             Constants.MOVE move = Utils.majorityClass(data);
             n.setLeaf(move.toString(), move);
             return n;
         }else{                                                  //4.
-            System.out.println("DEEPER");
-            String bestAtr = ID3.selectAttribute(data, attr);
-            System.out.println("best: "+bestAtr);
-            n.setAttribute(bestAtr);
-            attr.remove(bestAtr);
-            Stack<String> values = Utils.findEveryPossibleAttributeValue(bestAtr);
+            String bestAttr = ID3.selectAttribute(data, attr);
+            n.setAttribute(bestAttr);
+            attr.remove(bestAttr);
+            Stack<String> values = Utils.findEveryPossibleAttributeValue(bestAttr);
             for (String v : values){
-                LinkedList<DataTuple> sublist = Utils.getSubList(data, bestAtr, v);
+                LinkedList<DataTuple> sublist = Utils.getSubList(data, bestAttr, v);
                 if(sublist.isEmpty()){
                     Node child = new Node();
                     Constants.MOVE move = Utils.majorityClass(data);
