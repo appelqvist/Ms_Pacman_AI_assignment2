@@ -1,195 +1,30 @@
 package pacman.entries.pacman;
-
 import dataRecording.DataTuple;
 import pacman.game.Constants;
-
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.LinkedList;
-
-import static java.lang.String.valueOf;
+import java.util.Stack;
 
 /**
- * Created by Andréas Appelqvist on 2016.
+ * Created by Andréas Appelqvist on 2017-01-22.
  */
 public class Utils {
 
-    public static LinkedList<String> getAttributes() {
-        LinkedList<String> attributes = new LinkedList<>();
-        attributes.add("pillsLeft");
-        attributes.add("powerPillsLeft");
-
-        attributes.add("distanceToBlinky");
-        attributes.add("distanceToInky");
-        attributes.add("distanceToPinky");
-        attributes.add("distanceToSue");
-
-        attributes.add("dirToBlinky");
-        attributes.add("dirToInky");
-        attributes.add("dirToPinky");
-        attributes.add("dirToSue");
-
-        attributes.add("isBlinkyEdible");
-        attributes.add("isInkyEdible");
-        attributes.add("isPinkyEdible");
-        attributes.add("isSueEdible");
-        return attributes;
-    }
-
-    public static Constants.MOVE getMajorityClass(LinkedList<DataTuple> data) {
-        int up = 0, down = 0, left = 0, right = 0;
-        int biggest = -1;
-        Constants.MOVE move = Constants.MOVE.NEUTRAL;
-
-        for (DataTuple tuple : data) {
-            if (tuple.DirectionChosen == Constants.MOVE.UP) {
-                up++;
-                if (up > biggest) {
-                    biggest = up;
-                    move = Constants.MOVE.UP;
-                }
-            } else if (tuple.DirectionChosen == Constants.MOVE.DOWN) {
-                down++;
-                if (down > biggest) {
-                    biggest = down;
-                    move = Constants.MOVE.DOWN;
-                }
-            } else if (tuple.DirectionChosen == Constants.MOVE.LEFT) {
-                left++;
-                if (left > biggest) {
-                    biggest = left;
-                    move = Constants.MOVE.LEFT;
-                }
-            } else if (tuple.DirectionChosen == Constants.MOVE.RIGHT) {
-                right++;
-                if (right > biggest) {
-                    biggest = right;
-                    move = Constants.MOVE.RIGHT;
-                }
-            }
-        }
-        return move;
-    }
-
-    public static String[] getAttributeValue(String atr) {
-        String[] a;
-        if (atr.contains("dirTo")) {
-            a = new String[5];
-            a[0] = "UP";
-            a[1] = "DOWN";
-            a[2] = "LEFT";
-            a[3] = "RIGHT";
-            a[4] = "NONE";
-        } else if (atr.contains("Edible")) {
-            a = new String[2];
-            a[0] = "true";
-            a[1] = "false";
-        } else {
-            a = new String[4];
-            a[0] = "LOW";
-            a[1] = "MEDIUM";
-            a[2] = "HIGH";
-            a[3] = "NONE";
-        }
-        return a;
-    }
-
-    public static LinkedList<DataTuple> getSubset(LinkedList<DataTuple> data, String byAtribute, String whenValue) {
-        LinkedList<DataTuple> subset = new LinkedList<>();
-        for (DataTuple tuple : data) {
-            if (byAtribute.contains("Blinky")) {
-                if (byAtribute.contains("dir")) {
-                    if (valueOf(tuple.blinkyDir).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("distance")) {
-                    if (valueOf(tuple.discretizeDistance(tuple.blinkyDist)).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("Edible")) {
-                    if (("" + tuple.isBlinkyEdible).equals(whenValue))
-                        subset.add(tuple);
-                }
-            } else if (byAtribute.contains("Inky")) {
-                if (byAtribute.contains("dir")) {
-                    if (valueOf(tuple.inkyDir).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("distance")) {
-                    if (valueOf(tuple.discretizeDistance(tuple.inkyDist)).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("Edible")) {
-                    if (("" + tuple.isInkyEdible).equals(whenValue))
-                        subset.add(tuple);
-                }
-            } else if (byAtribute.contains("Pinky")) {
-                if (byAtribute.contains("dir")) {
-                    if (valueOf(tuple.pinkyDir).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("distance")) {
-                    if (valueOf(tuple.discretizeDistance(tuple.pinkyDist)).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("Edible")) {
-                    if (("" + tuple.isPinkyEdible).equals(whenValue))
-                        subset.add(tuple);
-                }
-            } else if (byAtribute.contains("Sue")) {
-                if (byAtribute.contains("dir")) {
-                    if (valueOf(tuple.sueDir).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("distance")) {
-                    if (valueOf(tuple.discretizeDistance(tuple.sueDist)).equals(whenValue))
-                        subset.add(tuple);
-                } else if (byAtribute.contains("Edible")) {
-                    if (("" + tuple.isSueEdible).equals(whenValue))
-                        subset.add(tuple);
-                }
-            } else {
-                if (byAtribute.contains("power")) {
-                    if ((valueOf(tuple.discretizeNumberOfPowerPills(tuple.numOfPowerPillsLeft))).equals(whenValue))
-                        subset.add(tuple);
-                } else {
-                    if ((valueOf(tuple.discretizeNumberOfPills(tuple.numOfPillsLeft))).equals(whenValue))
-                        subset.add(tuple);
-                }
-            }
-        }
-        return subset;
+    /**
+     * Calculate the log2(x)
+     * @param x
+     * @return
+     */
+    public static double toLog2(double x) {
+        return Math.log(x) / Math.log(2);
     }
 
     /**
-     * Gives a int array with:
-     * int[0] = counts UP
-     * int[1] = counts DOWN
-     * int[2] = counts LEFT
-     * int[3] = counts RIGHT
-     *
-     * @param dataSet
-     * @return int[] size 4 with the counts on every class.
+     * Check if all the tuples in the dataset has the same class.
+     * @param data
+     * @return true if it is, false if not.
      */
-    public static int[] countClass(LinkedList<DataTuple> dataSet) {
-        int[] classCount = new int[4];
-
-        for (DataTuple data : dataSet) {
-            if (data.DirectionChosen == Constants.MOVE.UP)
-                classCount[0]++;
-            else if (data.DirectionChosen == Constants.MOVE.DOWN)
-                classCount[1]++;
-            else if (data.DirectionChosen == Constants.MOVE.LEFT)
-                classCount[2]++;
-            else if (data.DirectionChosen == Constants.MOVE.RIGHT)
-                classCount[3]++;
-        }
-        return classCount;
-    }
-
-    public static double getAccuracy(TreeNode root ,LinkedList<DataTuple> testData){
-        int sameClass = 0;
-        System.out.println(root.label);
-        for(DataTuple tuple : testData){
-            TreeNode child = root.getLeaf(tuple);
-            if(child.getMove().equals(tuple.DirectionChosen))
-                sameClass++;
-        }
-        System.out.println(sameClass + " av " + testData.size());
-        return (double)sameClass/testData.size();
-    }
-
     public static boolean allTupleSameClass(LinkedList<DataTuple> data) {
         Constants.MOVE move = data.getFirst().DirectionChosen;
         for (DataTuple tuple : data) {
@@ -198,5 +33,93 @@ public class Utils {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns a sublist of data where the attribute has value.
+     *
+     * @param data
+     * @param attribute
+     * @param value
+     * @return
+     */
+    public static LinkedList<DataTuple> getSubList(LinkedList<DataTuple> data, String attribute, String value) {
+        LinkedList<DataTuple> sublist = new LinkedList<>();
+        try {
+            for (DataTuple tuple : data) {
+                Field f = DataTuple.class.getDeclaredField(attribute);
+                if (attribute.contains("Dist") && DataTuple.DiscreteTag.DiscretizeDouble((Integer) f.get(tuple)).toString().equals(value)) {
+                    sublist.add(tuple);
+                } else if (!attribute.contains("Dist") && f.get(tuple).toString().equals(value)) {
+                    sublist.add(tuple);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return sublist;
+    }
+
+    /**
+     * Gives an array with every possible value for a given attribute.
+     *
+     * @return Stack<String>
+     */
+    public static Stack<String> findEveryPossibleAttributeValue(String attribute) {
+        Stack<String> values = new Stack<>();
+        if (attribute.contains("Edible")) {
+            values.push("true");
+            values.push("false");
+        } else if (attribute.contains("Dir")) {
+            for (Constants.MOVE move : Constants.MOVE.values()) {
+                values.push(move.toString());
+            }
+        } else if (attribute.contains("Dist")) {
+            values.push("HIGH");
+            values.push("LOW");
+            values.push("NONE");
+        } else {
+            System.exit(0); //pang
+            //Throw a exception here.
+        }
+        return values;
+    }
+
+    /**
+     * Find the move that is the most occurred.
+     * @param data
+     * @return
+     */
+    public static Constants.MOVE majorityClass(LinkedList<DataTuple> data) {
+        HashMap<Constants.MOVE, Integer> tuples = new HashMap<>(); //K MOVE, NBR OF OCCUR.
+        for(Constants.MOVE move : Constants.MOVE.values()){
+            tuples.put(move,0); //init
+        }
+
+        for(DataTuple t : data){
+            tuples.put(t.DirectionChosen, tuples.get(t.DirectionChosen) + 1 );
+        }
+
+        Constants.MOVE majM = Constants.MOVE.NEUTRAL;
+        for(Constants.MOVE m : tuples.keySet()){
+            if(tuples.get(m) > tuples.get(majM)){
+                majM = m;
+            }
+        }
+
+        return majM;
+    }
+
+    /**
+     * Get Accuracy, will test the classifier
+     */
+    public static double getAccuracy(Node root ,LinkedList<DataTuple> testData){
+        int sameClass = 0;
+        for(DataTuple tuple : testData){
+            Node leaf = root.getLeafNode(tuple);
+            if(leaf.getMove().equals(tuple.DirectionChosen))
+                sameClass++;
+        }
+        return (double)sameClass/testData.size();
     }
 }

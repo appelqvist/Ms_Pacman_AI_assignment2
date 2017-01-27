@@ -1,78 +1,67 @@
 package pacman.entries.pacman;
-
 import dataRecording.DataTuple;
+import pacman.game.Constants;
+
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * Created by Andréas Appelqvist on 2016
+ * Created by Andréas Appelqvist on 2017-01-21.
  */
 public class ID3 {
 
-    public static String selectBestAttribute(LinkedList<DataTuple> dataSet, LinkedList<String> attributes) {
-        double avr = calcAverage(dataSet);
+    public static String selectAttribute(LinkedList<DataTuple> dataTuples, LinkedList<String> attr) {
 
-        double bestScore = -10000;
-        String bestAttribute = "init";
-        int[] classCount;
+        //Is the average value
+        double entropy = info(dataTuples);
+        double bestGain = Double.MIN_VALUE;
+        String attrWithHighestGain = "";
 
-        LinkedList<DataTuple> subset;
-
-        for (String atr : attributes) { //ex dirBlinky
-
-            double atrScore = 0;
-            String[] values = Utils.getAttributeValue(atr);
-
-            for (String value : values) { //DOWN //UP //LEFT //RIGHT
-                subset = Utils.getSubset(dataSet, atr, value);
-                classCount = Utils.countClass(subset);
-
-                double temp = 0;
-                for (int i = 0; i < classCount.length; i++) {
-                    if(classCount[i] > 0){
-                    temp -= (((double) classCount[i] / subset.size())
-                            * binaryLogarithm((double) classCount[i] / subset.size()));
-                    }
+        for (String attribute : attr) {
+            double infoAD = 0;
+            double gain = 0;
+            for (String attrValue : Utils.findEveryPossibleAttributeValue(attribute)) {
+                LinkedList<DataTuple> subList = Utils.getSubList(dataTuples, attribute, attrValue);
+                if(!subList.isEmpty()) { //We cannot do 0/X..
+                    double temp = (double) subList.size() / dataTuples.size();
+                    double temp2 = info(subList);
+                    infoAD += temp * temp2;
                 }
-
-                atrScore += ((double) subset.size() / dataSet.size()) * temp;
             }
-
-            if ((avr - atrScore) > bestScore) {
-                bestScore = avr - atrScore;
-                bestAttribute = atr;
+            gain = entropy - infoAD;
+            if (gain > bestGain) {
+                bestGain = gain;
+                attrWithHighestGain = attribute;
+            }else if(entropy - infoAD == 0.0){ //Fix, if the infoAD is the entropy that every other will get undefiend cause of 0/x rule.
+                attrWithHighestGain = attribute;
+                break;
             }
         }
-        return bestAttribute;
+        return attrWithHighestGain;
     }
 
-    private static double calcAverage(LinkedList<DataTuple> dataSet) {
-
-        int[] classCount = Utils.countClass(dataSet);
-
-        int total = dataSet.size(), up = classCount[0], down = classCount[1],
-                left = classCount[2], right = classCount[3];
-
-        double average = 0;
-
-        if (up > 0) {
-            average -= ((double) up / total) * (binaryLogarithm((double) up / total));
-        }
-        if (down > 0) {
-            average -= ((double) down / total) * (binaryLogarithm((double) down / total));
-        }
-        if (left > 0) {
-            average -= ((double) left / total) * (binaryLogarithm((double) left / total));
-        }
-        if (right > 0) {
-            average -= ((double) right / total) * (binaryLogarithm((double) right / total));
+    public static double info(LinkedList<DataTuple> D) {
+        HashMap<Constants.MOVE, Integer> classes = new HashMap<>();
+        for (Constants.MOVE classMove : Constants.MOVE.values()) {
+            classes.put(classMove, 0);
         }
 
-        return average;
+        int temp;
+        for (DataTuple tuple : D) {
+            temp = classes.get(tuple.DirectionChosen);
+            temp++;
+            classes.put(tuple.DirectionChosen, temp);
+        }
+
+        int total = D.size();
+        double infoD = 0;
+
+        for (Constants.MOVE classMove : Constants.MOVE.values()) {
+            double nbrOfHits = classes.get(classMove);
+            if (nbrOfHits > 0) {
+                infoD += -(nbrOfHits / total) * Utils.toLog2(nbrOfHits / total);
+            }
+        }
+        return infoD;
     }
-
-    private static double binaryLogarithm(double decimal) {
-        return (Math.log10(decimal) / Math.log10(2));
-    }
-
-
 }
