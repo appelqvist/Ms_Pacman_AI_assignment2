@@ -1,1 +1,2 @@
-# Ms_Pacman_AI_assignment
+# Ms Pacman
+Is the second assignement in the AI-course
